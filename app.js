@@ -19,14 +19,35 @@ var pool  = mysql.createPool({
 
 var userModel = require('./user_model.js').make(pool);
 
+app.post('/registerUser',function(req,res) {
+  console.log("req body: " + JSON.stringify(req.body));
+
+  var name = req.body.name;
+  var phone = req.body.phone;
+  var openudid = req.body.openudid;
+
+  var endCallback = function(user_id) {
+    var response = {};
+    response['code'] = "0";
+    if (!user_id) {
+      response['code'] = "-1";
+    }
+    response['user_id'] = user_id+"";
+    var body = JSON.stringify(response);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Length', Buffer.byteLength(body));
+    res.end(body);
+  }
+
+  userModel.addUser(name,phone,openudid,endCallback);
+});
+
 app.post('/checkUsersByContacts', function(req, res){
   console.log("req body: " + JSON.stringify(req.body));
   var app_users = [];
 
   var endCallback = function() {
-//    console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
-//    console.log("is end: app users: " + JSON.stringify(app_users));
-
     var body = JSON.stringify(app_users);
 
     res.setHeader('Content-Type', 'application/json');
@@ -41,8 +62,6 @@ app.post('/checkUsersByContacts', function(req, res){
   for (var i = 0; i < req.body.length; i++) {
     var contact = req.body[i];
 
-    var endCallbackRef = endCallback;
-
     process_count += contact.phones.length;
 //console.log("OUTter process count: " + process_count);
 
@@ -51,9 +70,8 @@ app.post('/checkUsersByContacts', function(req, res){
     (function() {
       var inner_contact = contact;
       var name = inner_contact.name;
-      var inner_endCallbackRef = endCallbackRef;
 
-      var checkResultCallback = function(is_from_callback,is_ok,appuser_phone,index,endCallbackFunc) {
+      var checkResultCallback = function(is_from_callback,is_ok,appuser_data,index,endCallbackFunc) {
 //console.log(">>>> process_count: " + process_count + "; phone num: " + appuser_phone);
         if (is_from_callback) { //only start counting when is from model callback
           process_count--;
@@ -64,7 +82,7 @@ app.post('/checkUsersByContacts', function(req, res){
 
         if (is_ok) {
 //console.log("PPPPPP push app user phone: " + appuser_phone);
-          app_users.push(appuser_phone);
+          app_users.push(appuser_data);
         }
 
         index++;
@@ -76,7 +94,7 @@ app.post('/checkUsersByContacts', function(req, res){
         userModel.checkUser(name,phone,checkResultCallback,index,endCallbackFunc);
       };
 
-      checkResultCallback(false,false,"",-1,inner_endCallbackRef);
+      checkResultCallback(false,false,null,-1,endCallback);
     })();
 
     //console.log("end loop for name: " + contact.name);
