@@ -25,8 +25,9 @@ UserModel.prototype.addUser = function(name,phone,openudid,endCallback) {
   });
 };
 
-UserModel.prototype.checkUser = function(name,phone,callback,index,endCallback) {
-  var sql="select user_id,name,phone from user where name='"+name+"' and phone='"+phone+"'";
+UserModel.prototype.checkUser = function(phone,callback,index,endCallback) {
+  //var sql="select user_id,name,phone from user where name='"+name+"' and phone='"+phone+"'";
+  var sql="select user_id,name,phone from user where phone='"+phone+"'";
 
 //console.log("select sql: " + sql);
 
@@ -45,7 +46,7 @@ UserModel.prototype.checkUser = function(name,phone,callback,index,endCallback) 
         callback(true,false,phone,index,endCallback);     
       }
       else {
-//console.log(" -- is app user: name: " + name +"; phone: " + phone);
+//console.log(" -- is app user: phone: " + phone);
 //console.log("data: " + JSON.stringify(rows));
         callback(true,true,rows[0],index,endCallback);     
       }

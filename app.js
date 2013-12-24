@@ -50,6 +50,9 @@ app.post('/checkUsersByContacts', function(req, res){
   var endCallback = function() {
     var body = JSON.stringify(app_users);
 
+//console.log("EEEEEEEEEEEEEEEEEEE");
+//console.log(body);
+
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Length', Buffer.byteLength(body));
     res.end(body);
@@ -72,17 +75,17 @@ app.post('/checkUsersByContacts', function(req, res){
       var name = inner_contact.name;
 
       var checkResultCallback = function(is_from_callback,is_ok,appuser_data,index,endCallbackFunc) {
-//console.log(">>>> process_count: " + process_count + "; phone num: " + appuser_phone);
+        if (is_ok) {
+//console.log("PPPPPP push app user phone: " + JSON.stringify(appuser_data));
+          app_users.push(appuser_data);
+        }
+
+//console.log(">>>> process_count: " + process_count + "; data: " + JSON.stringify(appuser_data));
         if (is_from_callback) { //only start counting when is from model callback
           process_count--;
           if (process_count == 0) {
             endCallbackFunc();
           }
-        }
-
-        if (is_ok) {
-//console.log("PPPPPP push app user phone: " + appuser_phone);
-          app_users.push(appuser_data);
         }
 
         index++;
@@ -91,7 +94,7 @@ app.post('/checkUsersByContacts', function(req, res){
         }
 
         phone = inner_contact.phones[index];
-        userModel.checkUser(name,phone,checkResultCallback,index,endCallbackFunc);
+        userModel.checkUser(phone,checkResultCallback,index,endCallbackFunc);
       };
 
       checkResultCallback(false,false,null,-1,endCallback);
