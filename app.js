@@ -22,7 +22,7 @@ var userModel = require('./user_model.js').make(pool);
 app.post('/registerUser',function(req,res) {
   console.log("req body: " + JSON.stringify(req.body));
 
-  var name = req.body.name;
+  //var name = req.body.name;
   var phone = req.body.phone;
   var openudid = req.body.openudid;
 
@@ -40,7 +40,7 @@ app.post('/registerUser',function(req,res) {
     res.end(body);
   }
 
-  userModel.addUser(name,phone,openudid,endCallback);
+  userModel.addUser(phone,openudid,endCallback);
 });
 
 app.post('/checkUsersByContacts', function(req, res){
@@ -72,7 +72,7 @@ app.post('/checkUsersByContacts', function(req, res){
     //scope to capture contact
     (function() {
       var inner_contact = contact;
-      var name = inner_contact.name;
+      //var name = inner_contact.name;
 
       var checkResultCallback = function(is_from_callback,is_ok,appuser_data,index,endCallbackFunc) {
         if (is_ok) {
