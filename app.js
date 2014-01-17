@@ -58,6 +58,11 @@ app.post('/checkUsersByContacts', function(req, res){
     res.end(body);
   }
 
+  if (req.body.length == 0) {
+    endCallback();
+    return;
+  }
+
   //keep track of all the queries that are being processed.
   //since they can be processed in any order, all calls are passed the endCallback function
   var process_count = 0;
@@ -103,6 +108,27 @@ app.post('/checkUsersByContacts', function(req, res){
     //console.log("end loop for name: " + contact.name);
   }
 
+});
+
+app.post('/uploadAvatarImage', function (req, res) {
+
+    var tempPath = req.files.file.path;
+    console.error("upload file: " + tempPath);
+/*
+    var targetPath = path.resolve('./uploads/image.png');
+
+    if (path.extname(req.files.file.name).toLowerCase() === '.png') {
+        fs.rename(tempPath, targetPath, function(err) {
+            if (err) throw err;
+            console.log("Upload completed!");
+        });
+    } else {
+        fs.unlink(tempPath, function () {
+            if (err) throw err;
+            console.error("Only .png files are allowed!");
+        });
+    }
+*/
 });
 
 
