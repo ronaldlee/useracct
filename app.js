@@ -19,12 +19,37 @@ var pool  = mysql.createPool({
 
 var userModel = require('./user_model.js').make(pool);
 
+function getFormattedCurrentDate() {
+  var d = new Date();
+
+  var month = d.getMonth()+1;
+  month = month.toString().length == 1 ? '0'+month : month;
+  var minutes = d.getMinutes().toString().length == 1 ? '0'+d.getMinutes() : d.getMinutes();
+  var hours = d.getHours().toString().length == 1 ? '0'+d.getHours() : d.getHours();
+  var ampm = d.getHours() >= 12 ? 'pm' : 'am';
+
+  return d.getFullYear()+"-"+month+"-"+d.getDate()+" " + hours +":"+minutes+"_"+ampm;
+/*
+  minutes = d.getMinutes().toString().length == 1 ? '0'+d.getMinutes() : d.getMinutes(),
+  hours = d.getHours().toString().length == 1 ? '0'+d.getHours() : d.getHours(),
+  ampm = d.getHours() >= 12 ? 'pm' : 'am',
+  months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return days[d.getDay()]+' '+months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear()+' '+hours+':'+minutes+ampm;
+*/
+}
+
+app.post('/log',function(req,res) {
+  console.log(getFormattedCurrentDate()+":req body: " + JSON.stringify(req.body));
+});
+
 app.post('/registerUser',function(req,res) {
-  console.log("req body: " + JSON.stringify(req.body));
+  console.log(getFormattedCurrentDate()+":registerUser: " + JSON.stringify(req.body));
 
   //var name = req.body.name;
   var phone = req.body.phone;
   var openudid = req.body.openudid;
+  console.log("registerUser: phone: " + phone + "; openudid: " + openudid);
 
   var endCallback = function(user_id) {
     var response = {};
@@ -43,8 +68,81 @@ app.post('/registerUser',function(req,res) {
   userModel.addUser(phone,openudid,endCallback);
 });
 
+app.post('/checkUsersByContactsWithOpenUDID', function(req, res){
+  console.log(getFormattedCurrentDate()+":checkUsersByContactsWithOpenUDID: " + JSON.stringify(req.body));
+
+  var contacts = req.body.contacts;
+  var openudid = req.body.openudid;
+  console.log("checkUsersByContactsWithOpenUDID: openudid: " + openudid);
+
+  var app_users = [];
+
+  var endCallback = function() {
+    var body = JSON.stringify(app_users);
+
+//console.log("EEEEEEEEEEEEEEEEEEE");
+//console.log(body);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Length', Buffer.byteLength(body));
+    res.end(body);
+  }
+
+  if (contacts.length == 0) {
+    endCallback();
+    return;
+  }
+
+  //keep track of all the queries that are being processed.
+  //since they can be processed in any order, all calls are passed the endCallback function
+  var process_count = 0;
+
+  for (var i = 0; i < contacts.length; i++) {
+    var contact = contacts[i];
+
+    process_count += contact.phones.length;
+//console.log("OUTter process count: " + process_count);
+
+    //for each contact and their phone numbers, recursively check if any combination is registered user.
+    //scope to capture contact
+    (function() {
+      var inner_contact = contact;
+      //var name = inner_contact.name;
+
+      var checkResultCallback = function(is_from_callback,is_ok,appuser_data,index,endCallbackFunc) {
+        if (is_ok) {
+//console.log("PPPPPP push app user phone: " + JSON.stringify(appuser_data));
+          app_users.push(appuser_data);
+        }
+
+//console.log(">>>> process_count: " + process_count + "; data: " + JSON.stringify(appuser_data));
+        if (is_from_callback) { //only start counting when is from model callback
+          process_count--;
+          if (process_count == 0) {
+            endCallbackFunc();
+          }
+        }
+
+        index++;
+        if (index >= inner_contact.phones.length) {
+          return;
+        }
+
+        phone = inner_contact.phones[index];
+        userModel.checkUser(phone,checkResultCallback,index,endCallbackFunc);
+      };
+
+      checkResultCallback(false,false,null,-1,endCallback);
+    })();
+
+    //console.log("end loop for name: " + contact.name);
+  }
+
+});
+
 app.post('/checkUsersByContacts', function(req, res){
-  console.log("req body: " + JSON.stringify(req.body));
+  console.log(getFormattedCurrentDate()+":checkUsersByContacts: " + JSON.stringify(req.body));
+
   var app_users = [];
 
   var endCallback = function() {
