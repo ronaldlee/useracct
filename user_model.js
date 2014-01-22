@@ -55,4 +55,26 @@ UserModel.prototype.checkUser = function(phone,callback,index,endCallback) {
   });
 
 };
+
+UserModel.prototype.getPhoneByUserID = function(user_id,callback) {
+  var sql="select phone from user where user_id='"+user_id+"'";
+
+  this.pool.getConnection(function(err, connection) {
+    connection.query(sql, function(err, rows) {
+      connection.release();
+      if (err) {
+        console.log("err: " + JSON.stringify(err));
+        callback(null);
+        return;
+      }
+      if (rows.length != 1) {
+        callback(null);     
+      }
+      else {
+        callback(rows[0]['phone']);     
+      }
+    });
+  });
+};
+
 module.exports.make = make;

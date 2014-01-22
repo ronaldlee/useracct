@@ -68,6 +68,28 @@ app.post('/registerUser',function(req,res) {
   userModel.addUser(phone,openudid,endCallback);
 });
 
+app.post('/getPhoneByUserID',function(req,res) {
+  console.log(getFormattedCurrentDate()+":getPhoneByUserID: " + JSON.stringify(req.body));
+
+  var userid= req.body.userid;
+
+  var endCallback = function(phone) {
+    var response = {};
+    response['code'] = "0";
+    if (!phone) {
+      response['code'] = "-1";
+    }
+    response['phone'] = phone+"";
+    var body = JSON.stringify(response);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Length', Buffer.byteLength(body));
+    res.end(body);
+  }
+
+  userModel.getPhoneByUserID(userid,endCallback);
+});
+
 app.post('/checkUsersByContactsWithOpenUDID', function(req, res){
   console.log(getFormattedCurrentDate()+":checkUsersByContactsWithOpenUDID: " + JSON.stringify(req.body));
 
