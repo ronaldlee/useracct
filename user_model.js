@@ -6,8 +6,8 @@ function UserModel(pool) {
   this.pool = pool;
 }
 
-UserModel.prototype.addUser = function(phone,openudid,endCallback) {
-  var sql="insert into user (phone,openudid) values('"+phone+"','"+openudid+"') on duplicate key update phone='"+phone+"',last_play_date=NULL";
+UserModel.prototype.addUser = function(phone,openudid,callingcode,endCallback) {
+  var sql="insert into user (phone,openudid,calling_code) values('"+phone+"','"+openudid+"','"+callingcode+"') on duplicate key update phone='"+phone+"',calling_code='"+callingcode+"',last_play_date=NULL";
 //console.log("inert query: " + add_new_user_sql);
   this.pool.getConnection(function(err, connection) {
     connection.query(sql, function(err, result) {

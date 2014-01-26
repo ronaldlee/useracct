@@ -49,7 +49,12 @@ app.post('/registerUser',function(req,res) {
   //var name = req.body.name;
   var phone = req.body.phone;
   var openudid = req.body.openudid;
-  console.log("registerUser: phone: " + phone + "; openudid: " + openudid);
+  var callingcode = req.body.callingcode;
+  if (callingcode === undefined) {
+    console.log("missing callingcode!");
+    callingcode = "1";
+  }
+  console.log("registerUser: phone: " + phone + "; openudid: " + openudid + "; callingcode: " + callingcode);
 
   var endCallback = function(user_id) {
     var response = {};
@@ -65,7 +70,7 @@ app.post('/registerUser',function(req,res) {
     res.end(body);
   }
 
-  userModel.addUser(phone,openudid,endCallback);
+  userModel.addUser(phone,openudid,callingcode,endCallback);
 });
 
 app.post('/getPhoneByUserID',function(req,res) {
