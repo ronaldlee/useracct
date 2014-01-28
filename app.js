@@ -4,6 +4,7 @@ var path= require('path');
 
 //app.use(express.bodyParser({keepExtensions: true,uploadDir:'~/uploads/tmp'}));
 app.use(express.bodyParser({keepExtensions: true,uploadDir:'/tmp'}));
+app.use(express.static('/home/ubuntu/public'));
 
 config_file = "config.json"
 fs = require('fs');
@@ -241,7 +242,7 @@ app.post('/checkUsersByContacts', function(req, res){
 app.post('/uploadAvatarImage', function (req, res) {
     console.error("uploadAvatarImage: req.files: " + JSON.stringify(req.files));
     var tempPath = req.files.file.path;
-    var targetFilename = '/home/ubuntu/uploads/'+req.files.file.name;
+    var targetFilename = '/home/ubuntu/public/uploads/'+req.files.file.name;
 
     console.error("upload tempfile: " + tempPath + "; target file: " + targetFilename);
 
