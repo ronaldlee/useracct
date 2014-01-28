@@ -1,6 +1,9 @@
 var express = require('express');
 var app = express();
-app.use(express.bodyParser());
+var path= require('path');
+
+//app.use(express.bodyParser({keepExtensions: true,uploadDir:'~/uploads/tmp'}));
+app.use(express.bodyParser({keepExtensions: true,uploadDir:'/tmp'}));
 
 config_file = "config.json"
 fs = require('fs');
@@ -236,15 +239,20 @@ app.post('/checkUsersByContacts', function(req, res){
 });
 
 app.post('/uploadAvatarImage', function (req, res) {
-
+    console.error("uploadAvatarImage: req.files: " + JSON.stringify(req.files));
     var tempPath = req.files.file.path;
-    console.error("upload file: " + tempPath);
-/*
-    var targetPath = path.resolve('./uploads/image.png');
+    var targetFilename = '/home/ubuntu/uploads/'+req.files.file.name;
+
+    console.error("upload tempfile: " + tempPath + "; target file: " + targetFilename);
+
+    var targetPath = path.resolve(targetFilename);
 
     if (path.extname(req.files.file.name).toLowerCase() === '.png') {
         fs.rename(tempPath, targetPath, function(err) {
-            if (err) throw err;
+            if (err) {
+              console.log("upload error: " + err);
+              throw err;
+            }
             console.log("Upload completed!");
         });
     } else {
@@ -253,7 +261,6 @@ app.post('/uploadAvatarImage', function (req, res) {
             console.error("Only .png files are allowed!");
         });
     }
-*/
 });
 
 
